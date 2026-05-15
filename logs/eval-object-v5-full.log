@@ -1,0 +1,14 @@
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+[robosuite WARNING] To setup, run: python /root/miniconda3/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+[evaluate] args: {'benchmark': 'object', 'checkpoint': None, 'crm_checkpoint': None, 'n_rollouts': 10, 'max_steps': 300, 'seed': 42, 'K': 10, 'mode': 'vla_only', 'smolvla_path': '/root/autodl-tmp/models/smolvla_libero/', 'obs_dim': 960, 'hidden_dim': 256, 'render': False, 'output_file': None}
+[eval] Mode: vla_only, benchmark: object
+[eval] Loading SmolVLA from /root/autodl-tmp/models/smolvla_libero/...
+Loading  HuggingFaceTB/SmolVLM2-500M-Video-Instruct weights ...
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/489 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 113/489 [00:00<00:00, 806.80it/s]Loading weights:  40%|███▉      | 194/489 [00:00<00:00, 728.79it/s]Loading weights:  55%|█████▍    | 267/489 [00:00<00:00, 702.82it/s]Loading weights:  69%|██████▉   | 337/489 [00:00<00:00, 698.40it/s]Loading weights: 100%|██████████| 489/489 [00:00<00:00, 867.27it/s]
+Reducing the number of VLM layers to 16 ...
+Loading weights from local directory
+[eval] Loading LIBERO object environments...
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[eval] 10 tasks loaded.

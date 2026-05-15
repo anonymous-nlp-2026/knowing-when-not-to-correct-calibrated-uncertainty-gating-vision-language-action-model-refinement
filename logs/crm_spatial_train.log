@@ -1,0 +1,141 @@
+[train_crm] args: {'benchmark': ['spatial'], 'epochs': 50, 'batch_size': 32, 'lr': 0.001, 'seed': 42, 'output_dir': '/root/autodl-tmp/checkpoints/crm_spatial_only/', 'cache_dir': '/root/autodl-tmp/crm_cache/', 'K': 10, 'obs_dim': 960, 'hidden_dim': 256, 'aug_noise_min': 0.02, 'aug_noise_max': 0.1, 'aug_ratio': 0.5, 'precompute': False, 'auto': False, 'smolvla_path': 'lerobot/smolvla_base', 'max_demos_per_task': 10, 'val_split': 0.1, 'log_every': 50, 'precompute_batch_size': 4, 'save_every': 500, 'shard_id': 0, 'num_shards': 1}
+[train_crm] device: cuda
+[train] Loading cache (spatial): 2402 samples, K=10, obs_dim=960
+[train] Total: 2402 samples from 1 benchmark(s)
+[train] CRM parameters: 337,438
+  epoch 1 batch 50/68 loss=0.391198
+Epoch 1/50  train_loss=0.649249  val_loss=0.246310  lr=9.99e-04
+  → New best val_loss: 0.246310
+  epoch 2 batch 50/68 loss=0.305336
+Epoch 2/50  train_loss=0.318502  val_loss=0.167327  lr=9.96e-04
+  → New best val_loss: 0.167327
+  epoch 3 batch 50/68 loss=0.200312
+Epoch 3/50  train_loss=0.228387  val_loss=0.148857  lr=9.91e-04
+  → New best val_loss: 0.148857
+  epoch 4 batch 50/68 loss=0.165417
+Epoch 4/50  train_loss=0.195173  val_loss=0.117919  lr=9.84e-04
+  → New best val_loss: 0.117919
+  epoch 5 batch 50/68 loss=0.184441
+Epoch 5/50  train_loss=0.185488  val_loss=0.115779  lr=9.76e-04
+  → New best val_loss: 0.115779
+  epoch 6 batch 50/68 loss=0.125984
+Epoch 6/50  train_loss=0.164090  val_loss=0.101568  lr=9.65e-04
+  → New best val_loss: 0.101568
+  epoch 7 batch 50/68 loss=0.155719
+Epoch 7/50  train_loss=0.146819  val_loss=0.100537  lr=9.52e-04
+  → New best val_loss: 0.100537
+  epoch 8 batch 50/68 loss=0.114419
+Epoch 8/50  train_loss=0.137978  val_loss=0.096695  lr=9.38e-04
+  → New best val_loss: 0.096695
+  epoch 9 batch 50/68 loss=0.152928
+Epoch 9/50  train_loss=0.131072  val_loss=0.089010  lr=9.22e-04
+  → New best val_loss: 0.089010
+  epoch 10 batch 50/68 loss=0.109573
+Epoch 10/50  train_loss=0.117157  val_loss=0.083132  lr=9.05e-04
+  → New best val_loss: 0.083132
+  epoch 11 batch 50/68 loss=0.111663
+Epoch 11/50  train_loss=0.112401  val_loss=0.080190  lr=8.85e-04
+  → New best val_loss: 0.080190
+  epoch 12 batch 50/68 loss=0.119948
+Epoch 12/50  train_loss=0.109708  val_loss=0.075363  lr=8.64e-04
+  → New best val_loss: 0.075363
+  epoch 13 batch 50/68 loss=0.088590
+Epoch 13/50  train_loss=0.099896  val_loss=0.076049  lr=8.42e-04
+  epoch 14 batch 50/68 loss=0.090723
+Epoch 14/50  train_loss=0.097477  val_loss=0.069573  lr=8.19e-04
+  → New best val_loss: 0.069573
+  epoch 15 batch 50/68 loss=0.099675
+Epoch 15/50  train_loss=0.091136  val_loss=0.072667  lr=7.94e-04
+  epoch 16 batch 50/68 loss=0.074962
+Epoch 16/50  train_loss=0.089977  val_loss=0.071716  lr=7.68e-04
+  epoch 17 batch 50/68 loss=0.096777
+Epoch 17/50  train_loss=0.093056  val_loss=0.069634  lr=7.41e-04
+  epoch 18 batch 50/68 loss=0.093630
+Epoch 18/50  train_loss=0.086268  val_loss=0.065816  lr=7.13e-04
+  → New best val_loss: 0.065816
+  epoch 19 batch 50/68 loss=0.100038
+Epoch 19/50  train_loss=0.088409  val_loss=0.068525  lr=6.84e-04
+  epoch 20 batch 50/68 loss=0.114808
+Epoch 20/50  train_loss=0.082739  val_loss=0.065127  lr=6.55e-04
+  → New best val_loss: 0.065127
+  epoch 21 batch 50/68 loss=0.078943
+Epoch 21/50  train_loss=0.078353  val_loss=0.062573  lr=6.24e-04
+  → New best val_loss: 0.062573
+  epoch 22 batch 50/68 loss=0.060679
+Epoch 22/50  train_loss=0.076704  val_loss=0.058676  lr=5.94e-04
+  → New best val_loss: 0.058676
+  epoch 23 batch 50/68 loss=0.074059
+Epoch 23/50  train_loss=0.071940  val_loss=0.060279  lr=5.63e-04
+  epoch 24 batch 50/68 loss=0.067051
+Epoch 24/50  train_loss=0.071416  val_loss=0.063915  lr=5.31e-04
+  epoch 25 batch 50/68 loss=0.062688
+Epoch 25/50  train_loss=0.071378  val_loss=0.057706  lr=5.00e-04
+  → New best val_loss: 0.057706
+  epoch 26 batch 50/68 loss=0.056304
+Epoch 26/50  train_loss=0.066935  val_loss=0.057925  lr=4.69e-04
+  epoch 27 batch 50/68 loss=0.074563
+Epoch 27/50  train_loss=0.064054  val_loss=0.055912  lr=4.37e-04
+  → New best val_loss: 0.055912
+  epoch 28 batch 50/68 loss=0.057651
+Epoch 28/50  train_loss=0.063594  val_loss=0.060231  lr=4.06e-04
+  epoch 29 batch 50/68 loss=0.057290
+Epoch 29/50  train_loss=0.063089  val_loss=0.054431  lr=3.76e-04
+  → New best val_loss: 0.054431
+  epoch 30 batch 50/68 loss=0.063907
+Epoch 30/50  train_loss=0.061007  val_loss=0.052209  lr=3.45e-04
+  → New best val_loss: 0.052209
+  epoch 31 batch 50/68 loss=0.059070
+Epoch 31/50  train_loss=0.060176  val_loss=0.050564  lr=3.16e-04
+  → New best val_loss: 0.050564
+  epoch 32 batch 50/68 loss=0.053141
+Epoch 32/50  train_loss=0.059207  val_loss=0.052485  lr=2.87e-04
+  epoch 33 batch 50/68 loss=0.057730
+Epoch 33/50  train_loss=0.055729  val_loss=0.050500  lr=2.59e-04
+  → New best val_loss: 0.050500
+  epoch 34 batch 50/68 loss=0.051897
+Epoch 34/50  train_loss=0.056080  val_loss=0.049659  lr=2.32e-04
+  → New best val_loss: 0.049659
+  epoch 35 batch 50/68 loss=0.074367
+Epoch 35/50  train_loss=0.055903  val_loss=0.050614  lr=2.06e-04
+  epoch 36 batch 50/68 loss=0.042176
+Epoch 36/50  train_loss=0.052767  val_loss=0.049544  lr=1.81e-04
+  → New best val_loss: 0.049544
+  epoch 37 batch 50/68 loss=0.058122
+Epoch 37/50  train_loss=0.052326  val_loss=0.047209  lr=1.58e-04
+  → New best val_loss: 0.047209
+  epoch 38 batch 50/68 loss=0.045112
+Epoch 38/50  train_loss=0.051746  val_loss=0.049593  lr=1.36e-04
+  epoch 39 batch 50/68 loss=0.049494
+Epoch 39/50  train_loss=0.050615  val_loss=0.049030  lr=1.15e-04
+  epoch 40 batch 50/68 loss=0.041467
+Epoch 40/50  train_loss=0.050664  val_loss=0.048630  lr=9.55e-05
+  epoch 41 batch 50/68 loss=0.048336
+Epoch 41/50  train_loss=0.049255  val_loss=0.046765  lr=7.78e-05
+  → New best val_loss: 0.046765
+  epoch 42 batch 50/68 loss=0.053488
+Epoch 42/50  train_loss=0.049088  val_loss=0.046249  lr=6.18e-05
+  → New best val_loss: 0.046249
+  epoch 43 batch 50/68 loss=0.048658
+Epoch 43/50  train_loss=0.048262  val_loss=0.046062  lr=4.76e-05
+  → New best val_loss: 0.046062
+  epoch 44 batch 50/68 loss=0.035539
+Epoch 44/50  train_loss=0.048181  val_loss=0.046003  lr=3.51e-05
+  → New best val_loss: 0.046003
+  epoch 45 batch 50/68 loss=0.043465
+Epoch 45/50  train_loss=0.047253  val_loss=0.045948  lr=2.45e-05
+  → New best val_loss: 0.045948
+  epoch 46 batch 50/68 loss=0.062707
+Epoch 46/50  train_loss=0.046936  val_loss=0.045767  lr=1.57e-05
+  → New best val_loss: 0.045767
+  epoch 47 batch 50/68 loss=0.052384
+Epoch 47/50  train_loss=0.046881  val_loss=0.045648  lr=8.86e-06
+  → New best val_loss: 0.045648
+  epoch 48 batch 50/68 loss=0.036638
+Epoch 48/50  train_loss=0.046777  val_loss=0.045770  lr=3.94e-06
+  epoch 49 batch 50/68 loss=0.035384
+Epoch 49/50  train_loss=0.046394  val_loss=0.045809  lr=9.87e-07
+  epoch 50 batch 50/68 loss=0.040482
+Epoch 50/50  train_loss=0.046220  val_loss=0.045748  lr=0.00e+00
+
+[train] Done. Best val_loss=0.045648
+[train] Checkpoints at /root/autodl-tmp/checkpoints/crm_spatial_only/

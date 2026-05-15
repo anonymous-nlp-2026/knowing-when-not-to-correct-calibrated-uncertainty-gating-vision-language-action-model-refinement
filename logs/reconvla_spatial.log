@@ -1,0 +1,17 @@
+[evaluate] args: {'benchmark': 'spatial', 'checkpoint': None, 'n_rollouts': 20, 'max_steps': 300, 'seed': 42, 'K': 10, 'mode': 'reconvla', 'smolvla_path': 'lerobot/smolvla_base', 'obs_dim': 960, 'hidden_dim': 256, 'render': False, 'output_file': 'artifacts/reconvla_spatial.json'}
+[eval] Mode: reconvla, benchmark: spatial
+[eval] Loading SmolVLA from lerobot/smolvla_base...
+Loading  HuggingFaceTB/SmolVLM2-500M-Video-Instruct weights ...
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/489 [00:00<?, ?it/s]Loading weights:  42%|████▏     | 203/489 [00:00<00:00, 1943.46it/s]Loading weights:  81%|████████▏ | 398/489 [00:00<00:00, 1497.62it/s]Loading weights: 100%|██████████| 489/489 [00:00<00:00, 1689.13it/s]
+Reducing the number of VLM layers to 16 ...
+[eval] Loading LIBERO spatial environments...
+[robosuite WARNING] No private macro file found! (__init__.py:7)
+WARNING:robosuite_logs:No private macro file found!
+[robosuite WARNING] It is recommended to use a private macro file (__init__.py:8)
+WARNING:robosuite_logs:It is recommended to use a private macro file
+[robosuite WARNING] To setup, run: python /root/miniconda3/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py (__init__.py:9)
+WARNING:robosuite_logs:To setup, run: python /root/miniconda3/lib/python3.12/site-packages/robosuite/scripts/setup_macros.py
+[info] using task orders [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+[eval] 10 tasks loaded.
+  pick_up_the_black_bowl_between_the_plate_and_the_ramekin_and_place_it_on_the_plate: rollout 5/20, success so far: 0/5
