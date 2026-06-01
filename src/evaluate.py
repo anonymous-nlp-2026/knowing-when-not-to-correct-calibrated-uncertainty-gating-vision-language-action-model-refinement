@@ -43,6 +43,7 @@ import json
 import time
 import signal
 import traceback
+import gc
 from pathlib import Path
 
 import torch
@@ -490,9 +491,13 @@ def select_action_conformal_crm(wrapper, obs, task_name, crm, device,
         mean_gripper = k_full[:, :, CORRECTION_DIM:].mean(dim=0)
         action_full = torch.cat([selected_pose, mean_gripper], dim=-1)
 
+    correction_norm = 0.0
+    if triggered:
+        correction_norm = (refined_pose.reshape(-1).cpu() - base_action.reshape(-1).cpu()).norm().item()
     step_metadata.append({
         "uncertainty": uncertainty,
         "triggered": triggered,
+        "correction_norm": correction_norm,
     })
     return action_full[0].cpu().numpy()
 
@@ -660,6 +665,7 @@ def evaluate(args):
             init_state = init_states[r % len(init_states)]
 
             rollout_meta = []
+            _current_task_for_meta = task_name
 
             if args.mode == "adaptive_unc_head":
                 action_fn = lambda obs: select_action_unc_head(
@@ -700,11 +706,24 @@ def evaluate(args):
                     obs_proj=obs_proj
                 )
 
-            success, steps = rollout_single(env, init_state, action_fn,
-                                            max_steps=args.max_steps,
-                                            wrapper=wrapper)
+            try:
+                success, steps = rollout_single(env, init_state, action_fn,
+                                                max_steps=args.max_steps,
+                                                wrapper=wrapper)
+            except RuntimeError as e:
+                if "out of memory" in str(e).lower():
+                    print(f"[eval] WARNING: CUDA OOM at {task_name} rollout {r+1}/{args.n_rollouts}, skipping", flush=True)
+                    torch.cuda.empty_cache()
+                    gc.collect()
+                    success = False
+                    steps = -1
+                else:
+                    raise
             if rollout_meta:
                 if args.mode in ("adaptive_unc_head", "adaptive_conformal_crm"):
+                    for _m in rollout_meta:
+                        _m["task_name"] = task_name
+                        _m["rollout_idx"] = r
                     all_unc_head_meta.extend(rollout_meta)
                 else:
                     all_adaptive_meta.extend(rollout_meta)
@@ -715,6 +734,9 @@ def evaluate(args):
             if (r + 1) % 5 == 0:
                 print(f"  {task_name}: rollout {r+1}/{args.n_rollouts}, "
                       f"success so far: {task_successes}/{r+1}")
+
+            gc.collect()
+            torch.cuda.empty_cache()
 
         task_rate = task_successes / args.n_rollouts
         results[task_name] = {
@@ -787,13 +809,17 @@ def evaluate(args):
     if args.mode == "adaptive_conformal_crm" and all_unc_head_meta:
         all_uncertainties = [m["uncertainty"] for m in all_unc_head_meta]
         all_triggered = [m["triggered"] for m in all_unc_head_meta]
+        all_correction_norms = [m.get("correction_norm", 0.0) for m in all_unc_head_meta]
         summary["adaptive_stats"] = {
             "mean_uncertainty": float(np.mean(all_uncertainties)),
             "trigger_rate": float(np.mean(all_triggered)),
             "tau": args.conformal_threshold,
             "total_steps": len(all_unc_head_meta),
             "crm_applied_steps": sum(all_triggered),
+            "mean_correction_norm": float(np.mean([n for n in all_correction_norms if n > 0])) if any(n > 0 for n in all_correction_norms) else 0.0,
         }
+        # Detailed per-step data for mechanism analysis
+        summary["detailed_steps"] = all_unc_head_meta
         print(f"[eval] Conformal CRM stats: "
               f"mean_unc={summary['adaptive_stats']['mean_uncertainty']:.4f}, "
               f"trigger_rate={summary['adaptive_stats']['trigger_rate']:.1%}")
@@ -831,8 +857,9 @@ def main():
         else:
             adaptive_tag = ""
         model_tag = f"_{args.model}" if args.model != "smolvla" else ""
+        k_tag = "" if args.mode == "vla_only" else f"_K{args.K}"
         mode_str = f"k{args.K}mean" if args.mode == "vla_only" and args.baseline_mode == "mean" else args.mode
-        args.output_file = f"logs/eval_{args.benchmark}_{mode_str}{model_tag}{norm_tag}{adaptive_tag}_seed{args.seed}.json"
+        args.output_file = f"logs/eval_{args.benchmark}_{mode_str}{model_tag}{k_tag}{norm_tag}{adaptive_tag}_seed{args.seed}.json"
     print(f"[evaluate] args: {vars(args)}", flush=True)
     evaluate(args)
     sys.exit(0)

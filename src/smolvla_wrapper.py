@@ -253,6 +253,54 @@ class SmolVLAWrapper:
         return torch.stack(all_samples, dim=1)  # (B, K, chunk_size, FULL_ACTION_DIM)
 
     @torch.no_grad()
+    def generate_k_samples_batched(self, past_key_values, prefix_pad_masks,
+                                    K: int = 10, noise: torch.Tensor = None) -> torch.Tensor:
+        """Batched K-sample generation: expand KV cache B -> B*K, single denoising loop.
+
+        Args:
+            past_key_values: KV cache from encode_prefix
+            prefix_pad_masks: (B, seq_len)
+            K: number of samples
+            noise: optional (B*K, chunk_size, max_act_dim) pre-generated noise for testing
+
+        Returns:
+            samples: (B, K, chunk_size, FULL_ACTION_DIM)
+        """
+        B = prefix_pad_masks.shape[0]
+        chunk_size = self.config.chunk_size
+        max_act_dim = self.config.max_action_dim
+        num_steps = self.config.num_steps
+        dt = -1.0 / num_steps
+
+        expanded_kv = {}
+        for layer_idx, kv in past_key_values.items():
+            expanded_kv[layer_idx] = {
+                "key_states": kv["key_states"].repeat_interleave(K, dim=0),
+                "value_states": kv["value_states"].repeat_interleave(K, dim=0),
+            }
+        expanded_masks = prefix_pad_masks.repeat_interleave(K, dim=0)
+
+        if noise is None:
+            noise = self.flow.sample_noise((B * K, chunk_size, max_act_dim), self.device)
+        x_t = noise
+
+        for step in range(num_steps):
+            time_val = 1.0 + step * dt
+            time_tensor = torch.full((B * K,), time_val, dtype=torch.float32,
+                                     device=self.device)
+            v_t = self.flow.denoise_step(
+                x_t=x_t,
+                prefix_pad_masks=expanded_masks,
+                past_key_values=expanded_kv,
+                timestep=time_tensor,
+            )
+            x_t = x_t + dt * v_t
+
+        raw_action = x_t[:, :, :FULL_ACTION_DIM]
+        unnorm_action = self._unnormalize_action(raw_action)
+        return unnorm_action.reshape(B, K, chunk_size, FULL_ACTION_DIM)
+
+    @torch.no_grad()
     def get_obs_features_and_samples(self, agentview_rgb, task_name, robot_state,
                                      eye_in_hand_rgb=None, K=10):
         """
@@ -268,7 +316,7 @@ class SmolVLAWrapper:
         obs_feat, kv_cache, pad_masks = self.encode_prefix(
             imgs, img_masks, lt, lm, state
         )
-        samples = self.generate_k_samples(kv_cache, pad_masks, K=K)
+        samples = self.generate_k_samples_batched(kv_cache, pad_masks, K=K)
         return obs_feat, samples
 
     @torch.no_grad()
@@ -277,5 +325,58 @@ class SmolVLAWrapper:
         obs_feat, kv_cache, pad_masks = self.encode_prefix(
             imgs, img_masks, lt, lm, state
         )
-        samples = self.generate_k_samples(kv_cache, pad_masks, K=K)
+        samples = self.generate_k_samples_batched(kv_cache, pad_masks, K=K)
         return obs_feat, samples
+
+    @torch.no_grad()
+    def generate_adaptive_k_samples(self, past_key_values, prefix_pad_masks,
+                                     threshold, k_init=2, k_full=5):
+        """Adaptive K: generate k_init samples, expand to k_full if L2 disagreement >= threshold."""
+        init_samples = self.generate_k_samples_batched(
+            past_key_values, prefix_pad_masks, K=k_init
+        )
+        B = init_samples.shape[0]
+
+        if k_init == 2:
+            diff = init_samples[:, 0, :, :FULL_ACTION_DIM] - init_samples[:, 1, :, :FULL_ACTION_DIM]
+            per_step_l2 = diff.norm(dim=-1)
+            mean_l2 = per_step_l2.mean(dim=-1)
+        else:
+            dists = []
+            for i in range(k_init):
+                for j in range(i + 1, k_init):
+                    diff = init_samples[:, i, :, :FULL_ACTION_DIM] - init_samples[:, j, :, :FULL_ACTION_DIM]
+                    dists.append(diff.norm(dim=-1).mean(dim=-1))
+            mean_l2 = torch.stack(dists).mean(dim=0)
+
+        needs_full = (mean_l2 >= threshold).any().item()
+        l2_val = mean_l2.item() if B == 1 else mean_l2.cpu().tolist()
+
+        if not needs_full:
+            return init_samples, {
+                'path': 'fast', 'actual_k': k_init, 'l2_distance': l2_val,
+            }
+
+        extra_samples = self.generate_k_samples_batched(
+            past_key_values, prefix_pad_masks, K=k_full - k_init
+        )
+        all_samples = torch.cat([init_samples, extra_samples], dim=1)
+        return all_samples, {
+            'path': 'full', 'actual_k': k_full, 'l2_distance': l2_val,
+        }
+
+    @torch.no_grad()
+    def get_obs_features_and_samples_adaptive(self, agentview_rgb, task_name,
+                                               robot_state, eye_in_hand_rgb=None,
+                                               threshold=0.1, k_init=2, k_full=5):
+        """End-to-end adaptive K: obs -> features + adaptive samples + metadata."""
+        imgs, img_masks, lt, lm, state = self.preprocess_obs(
+            agentview_rgb, task_name, robot_state, eye_in_hand_rgb
+        )
+        obs_feat, kv_cache, pad_masks = self.encode_prefix(
+            imgs, img_masks, lt, lm, state
+        )
+        samples, metadata = self.generate_adaptive_k_samples(
+            kv_cache, pad_masks, threshold, k_init, k_full
+        )
+        return obs_feat, samples, metadata

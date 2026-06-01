@@ -30,6 +30,7 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
 
@@ -67,6 +68,11 @@ def parse_args():
     p.add_argument("--auto", action="store_true",
                    help="precompute if cache missing, then train")
     p.add_argument("--smolvla_path", type=str, default="/root/autodl-tmp/models/smolvla_libero/")
+    p.add_argument("--model", type=str, default="smolvla",
+                   choices=["smolvla", "pi05"],
+                   help="which VLA to use for precompute")
+    p.add_argument("--pi05_path", type=str,
+                   default="/root/autodl-tmp/models/pi05_libero_finetuned/")
     p.add_argument("--max_demos_per_task", type=int, default=50)
     p.add_argument("--val_split", type=float, default=0.1)
     p.add_argument("--log_every", type=int, default=50)
@@ -81,6 +87,13 @@ def parse_args():
     p.add_argument("--input_mode", type=str, default="full",
                    choices=["full", "obs_only", "scalar_unc"],
                    help="full=all features, obs_only=no conformal, scalar_unc=scalar uncertainty")
+    p.add_argument("--loss_type", type=str, default="mse",
+                   choices=["mse", "perdof_weighted", "conformal_guided", "combined"],
+                   help="loss function variant")
+    p.add_argument("--lambda_conf", type=float, default=0.1,
+                   help="weight for conformal-guided auxiliary loss")
+    p.add_argument("--unified_obs_dim", type=int, default=None,
+                   help="Zero-pad obs_features to this dim for multi-suite training")
     return p.parse_args()
 
 
@@ -88,8 +101,6 @@ def parse_args():
 
 def precompute_features(args):
     """Run frozen SmolVLA on all demo timesteps, save features to disk."""
-    from smolvla_wrapper import SmolVLAWrapper
-
     benchmarks_to_run = []
     for bm in args.benchmark:
         cache_dir = Path(args.cache_dir) / bm
@@ -101,8 +112,14 @@ def precompute_features(args):
     if not benchmarks_to_run:
         return
 
-    print(f"[precompute] Loading SmolVLA from {args.smolvla_path}...")
-    wrapper = SmolVLAWrapper(args.smolvla_path, device="cuda")
+    if args.model == "pi05":
+        from pi05_wrapper import Pi05Wrapper
+        print(f"[precompute] Loading PI05 from {args.pi05_path}...")
+        wrapper = Pi05Wrapper(args.pi05_path, device="cuda")
+    else:
+        from smolvla_wrapper import SmolVLAWrapper
+        print(f"[precompute] Loading SmolVLA from {args.smolvla_path}...")
+        wrapper = SmolVLAWrapper(args.smolvla_path, device="cuda")
     print(f"[precompute] VLM hidden_size = {wrapper.vlm_hidden_size}")
 
     for benchmark in benchmarks_to_run:
@@ -153,9 +170,21 @@ def precompute_features(args):
             batch_end = min(i + bs, total)
             batch_samples = samples[i:batch_end]
 
-            obs_feat, k_samples = wrapper.get_obs_features_and_samples_batch(
-                batch_samples, K=args.K
-            )
+            if args.model == "pi05":
+                obs_feats, k_samples_list = [], []
+                for s in batch_samples:
+                    feat, samp = wrapper.get_obs_features_and_samples(
+                        s["agentview_rgb"], s["task_name"], s["ee_states"],
+                        eye_in_hand_rgb=s.get("eye_in_hand_rgb"), K=args.K
+                    )
+                    obs_feats.append(feat)
+                    k_samples_list.append(samp)
+                obs_feat = torch.cat(obs_feats, dim=0)
+                k_samples = torch.cat(k_samples_list, dim=0)
+            else:
+                obs_feat, k_samples = wrapper.get_obs_features_and_samples_batch(
+                    batch_samples, K=args.K
+                )
 
             # Slice to pose-only for CRM training
             k_trunc = k_samples[:, :, :H_EFF, :CORRECTION_DIM]
@@ -292,6 +321,37 @@ def _argmin_base_action(k_samp: "torch.Tensor") -> "torch.Tensor":
     return k_flat[torch.arange(B, device=k_flat.device), best_idx]  # (B, 30)
 
 
+def _argmin_to_expert(k_samp, expert_flat):
+    """Select the K-sample closest to expert action per batch element."""
+    B, K = k_samp.shape[0], k_samp.shape[1]
+    k_flat = k_samp.reshape(B, K, -1)
+    dists = ((k_flat - expert_flat.unsqueeze(1)) ** 2).sum(dim=-1)
+    best_idx = dists.argmin(dim=1)
+    return k_flat[torch.arange(B, device=k_flat.device), best_idx]
+
+
+def _compute_loss(refined, expert_flat, ba, k_samp, loss_type, dof_weights, lambda_conf):
+    """Compute CRM loss based on loss_type."""
+    if loss_type == "mse":
+        return F.mse_loss(refined, expert_flat)
+    elif loss_type == "perdof_weighted":
+        return (dof_weights * (refined - expert_flat) ** 2).mean()
+    else:
+        # conformal_guided or combined
+        argmin_expert = _argmin_to_expert(k_samp, expert_flat)
+        nonconformity = torch.norm(argmin_expert - expert_flat, dim=-1)
+        delta_a = refined - ba
+        correction_mag = torch.norm(delta_a, dim=-1)
+        nc_norm = nonconformity / (nonconformity.mean() + 1e-8)
+        cm_norm = correction_mag / (correction_mag.mean() + 1e-8)
+        loss_conf = F.mse_loss(cm_norm, nc_norm.detach())
+        if loss_type == "conformal_guided":
+            return F.mse_loss(refined, expert_flat) + lambda_conf * loss_conf
+        else:  # combined
+            loss_pdw = (dof_weights * (refined - expert_flat) ** 2).mean()
+            return loss_pdw + lambda_conf * loss_conf
+
+
 def train(args):
     set_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -319,6 +379,14 @@ def train(args):
     obs_features = torch.cat(all_obs_features)
     k_samples = torch.cat(all_k_samples)
     expert_actions = torch.cat(all_expert_actions)
+
+    # Zero-pad obs_features for multi-suite unified training
+    if args.unified_obs_dim and obs_features.shape[1] < args.unified_obs_dim:
+        pad_size = args.unified_obs_dim - obs_features.shape[1]
+        obs_features = F.pad(obs_features, (0, pad_size))
+        print(f"[train] Zero-padded obs_features to {obs_features.shape[1]} "
+              f"(+{pad_size} dims)")
+
     print(f"[train] Total: {obs_features.shape[0]} samples from "
           f"{len(args.benchmark)} benchmark(s)")
 
@@ -328,6 +396,16 @@ def train(args):
     n_train = N - n_val
     perm = torch.randperm(N)
     train_idx, val_idx = perm[:n_train], perm[n_train:]
+
+    # Pre-compute DOF weights for perdof_weighted/combined
+    dof_weights = None
+    if args.loss_type in ("perdof_weighted", "combined"):
+        expert_flat_train = expert_actions[train_idx].reshape(-1, H_EFF * CORRECTION_DIM)
+        dof_variance = expert_flat_train.var(dim=0)
+        dof_weights = 1.0 / (dof_variance + 1e-8)
+        dof_weights = dof_weights / dof_weights.sum() * (H_EFF * CORRECTION_DIM)
+        dof_weights = dof_weights.to(device)
+        print(f"[train] DOF weights: min={dof_weights.min():.4f}, max={dof_weights.max():.4f}")
 
     train_ds = CRMDataset(obs_features[train_idx], k_samples[train_idx],
                           expert_actions[train_idx])
@@ -398,11 +476,15 @@ def train(args):
                 _x = torch.cat([_ba, _batch["obs_features"]], dim=-1)
             else:
                 _x = torch.cat([_ba, _uf, _batch["obs_features"]], dim=-1)
+            _x = torch.nan_to_num(_x, nan=0.0, posinf=1e6, neginf=-1e6)
             _sum_x += _x.sum(dim=0)
             _sum_x2 += (_x ** 2).sum(dim=0)
             _n_total += _x.shape[0]
     _input_mean = _sum_x / _n_total
     _input_std = ((_sum_x2 / _n_total) - _input_mean ** 2).clamp(min=0).sqrt()
+    _input_mean = torch.nan_to_num(_input_mean, nan=0.0, posinf=0.0, neginf=0.0)
+    _input_std = torch.nan_to_num(_input_std, nan=1.0, posinf=1.0, neginf=1.0)
+    _input_std = _input_std.clamp(min=1e-6)
     crm.set_normalization_stats(_input_mean, _input_std)
     print(f"[train] Norm stats set: mean [{_input_mean.min():.4f}, {_input_mean.max():.4f}], "
           f"std [{_input_std.min():.4f}, {_input_std.max():.4f}]")
@@ -426,12 +508,13 @@ def train(args):
             uf, _mean = cgs.compute_features_batch(k_samp)
             if scalar_unc:
                 uf = _to_scalar_uf(uf)
-            uf = uf.to(device)
+            uf = torch.nan_to_num(uf, nan=0.0, posinf=1e6, neginf=-1e6).to(device)
             ba = _argmin_base_action(k_samp).to(device)  # (B, 30)
 
             # CRM forward
             refined = crm(ba, None if obs_only else uf, obs_feat)
-            loss = loss_fn(refined, expert_flat)
+            loss = _compute_loss(refined, expert_flat, ba, k_samp,
+                                 args.loss_type, dof_weights, args.lambda_conf)
 
             # Synthetic augmentation: perturb inputs, keep clean target
             n_aug = int(obs_feat.shape[0] * args.aug_ratio)
@@ -440,7 +523,9 @@ def train(args):
                 aug_ba = ba[:n_aug] + torch.randn_like(ba[:n_aug]) * ba_noise
                 aug_uf = uf[:n_aug] + torch.randn_like(uf[:n_aug]) * noise_scale.mean() * 0.1
                 aug_refined = crm(aug_ba, None if obs_only else aug_uf, obs_feat[:n_aug])
-                aug_loss = loss_fn(aug_refined, expert_flat[:n_aug])
+                aug_loss = _compute_loss(aug_refined, expert_flat[:n_aug], aug_ba,
+                                         k_samp[:n_aug], args.loss_type, dof_weights,
+                                         args.lambda_conf)
                 loss = loss + 0.5 * aug_loss
 
             optimizer.zero_grad()
@@ -476,7 +561,9 @@ def train(args):
                 ba = _argmin_base_action(k_samp).to(device)
 
                 refined = crm(ba, None if obs_only else uf, obs_feat)
-                val_loss += loss_fn(refined, expert_flat).item()
+                val_loss += _compute_loss(refined, expert_flat, ba, k_samp,
+                                          args.loss_type, dof_weights,
+                                          args.lambda_conf).item()
                 n_val_batches += 1
 
         avg_val_loss = val_loss / max(n_val_batches, 1)
