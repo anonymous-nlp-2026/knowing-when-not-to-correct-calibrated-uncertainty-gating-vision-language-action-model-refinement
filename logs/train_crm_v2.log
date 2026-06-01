@@ -1,30 +1,0 @@
-[train_crm] args: {'benchmark': ['spatial', 'object'], 'epochs': 50, 'batch_size': 32, 'lr': 0.001, 'seed': 42, 'output_dir': '/root/autodl-tmp/checkpoints/crm/', 'cache_dir': '/root/autodl-tmp/crm_cache/', 'K': 10, 'obs_dim': 960, 'hidden_dim': 256, 'aug_noise_min': 0.02, 'aug_noise_max': 0.1, 'aug_ratio': 0.5, 'precompute': False, 'auto': True, 'smolvla_path': 'lerobot/smolvla_base', 'max_demos_per_task': 50, 'val_split': 0.1, 'log_every': 50}
-[train_crm] device: cuda
-[auto] Cache not found for some benchmarks, precomputing...
-[precompute] Loading SmolVLA from lerobot/smolvla_base...
-Loading  HuggingFaceTB/SmolVLM2-500M-Video-Instruct weights ...
-[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
-Loading weights:   0%|          | 0/489 [00:00<?, ?it/s]Loading weights:  19%|█▉        | 95/489 [00:00<00:00, 702.63it/s]Loading weights:  34%|███▍      | 167/489 [00:00<00:00, 706.14it/s]Loading weights:  49%|████▊     | 238/489 [00:00<00:00, 700.02it/s]Loading weights:  71%|███████   | 347/489 [00:00<00:00, 844.24it/s]Loading weights: 100%|██████████| 489/489 [00:00<00:00, 988.88it/s]
-Reducing the number of VLM layers to 16 ...
-[precompute] VLM hidden_size = 960
-[precompute] Loading LIBERO demos (spatial)...
-[precompute] 60250 training samples from 500 trajectories.
-[precompute] [spatial] 100/60250 (310s elapsed, ~186624s remaining)
-[precompute] [spatial] 200/60250 (620s elapsed, ~186037s remaining)
-[precompute] [spatial] 300/60250 (928s elapsed, ~185497s remaining)
-[precompute] [spatial] 400/60250 (1238s elapsed, ~185224s remaining)
-[precompute] [spatial] 500/60250 (1550s elapsed, ~185195s remaining)
-[precompute] [spatial] 600/60250 (1867s elapsed, ~185575s remaining)
-[precompute] [spatial] 700/60250 (2183s elapsed, ~185679s remaining)
-[precompute] [spatial] 800/60250 (2496s elapsed, ~185456s remaining)
-[precompute] [spatial] 900/60250 (2809s elapsed, ~185241s remaining)
-[precompute] [spatial] 1000/60250 (3121s elapsed, ~184910s remaining)
-[precompute] [spatial] 1100/60250 (3435s elapsed, ~184721s remaining)
-[precompute] [spatial] 1200/60250 (3750s elapsed, ~184538s remaining)
-[precompute] [spatial] 1300/60250 (4062s elapsed, ~184184s remaining)
-[precompute] [spatial] 1400/60250 (4374s elapsed, ~183871s remaining)
-[precompute] [spatial] 1500/60250 (4688s elapsed, ~183608s remaining)
-[precompute] [spatial] 1600/60250 (5003s elapsed, ~183380s remaining)
-[precompute] [spatial] 1700/60250 (5315s elapsed, ~183039s remaining)
-[precompute] [spatial] 1800/60250 (5630s elapsed, ~182803s remaining)
-[precompute] [spatial] 1900/60250 (5942s elapsed, ~182481s remaining)
