@@ -1,7 +1,7 @@
 #!/bin/bash
 EXP_ID="$1"
 shift
-SENTINEL_DIR="/root/acr-vla-conformal-refinement/logs/sentinels"
+SENTINEL_DIR="$(cd "$(dirname "$0")/.." && pwd)/logs/sentinels"
 mkdir -p "$SENTINEL_DIR"
 
 eval "$@"

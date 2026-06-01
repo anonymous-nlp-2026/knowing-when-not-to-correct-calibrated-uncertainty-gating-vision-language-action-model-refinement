@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 import numpy as np
 
 # Load tokenizer
-tok = AutoTokenizer.from_pretrained('/root/autodl-tmp/models/gemma-2b-tokenizer')
+tok = AutoTokenizer.from_pretrained('./models/gemma-2b-tokenizer')
 print(f'Tokenizer class: {type(tok).__name__}')
 print(f'Default padding_side: {tok.padding_side}')
 print(f'pad_token: {repr(tok.pad_token)} (id={tok.pad_token_id})')

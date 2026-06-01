@@ -1,6 +1,7 @@
 """ACI 符号修复验证测试。"""
+import os
 import sys
-sys.path.insert(0, '/root/acr-vla-conformal-refinement')
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import torch
 from src.aci import AdaptiveConformalInference
 

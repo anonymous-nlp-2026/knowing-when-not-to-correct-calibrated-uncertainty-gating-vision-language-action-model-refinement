@@ -35,7 +35,7 @@ def parse_args():
                    help="Number of samples per step")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--smolvla_path", type=str,
-                   default="/root/autodl-tmp/models/smolvla_libero/")
+                   default="./models/smolvla")
     p.add_argument("--max_steps_per_rollout", type=int, default=50,
                    help="Max steps per rollout before reset")
     p.add_argument("--output_file", type=str, default=None)

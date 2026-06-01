@@ -39,7 +39,7 @@ except ImportError:
     from .utils import FULL_ACTION_DIM, CORRECTION_DIM
 
 
-OFT_CODE_PATH = "/root/openvla-oft-code"
+OFT_CODE_PATH = "./models/openvla-oft"
 NUM_ACTIONS_CHUNK = 8
 ACTION_DIM = 7
 PROPRIO_DIM = 8
@@ -133,7 +133,7 @@ class OpenVLAOFTWrapper:
     LLM_HIDDEN_SIZE = 4096
 
     def __init__(self,
-                 pretrained_path: str = "/root/autodl-tmp/models/openvla-oft/object",
+                 pretrained_path: str = "./models/openvla-oft",
                  unnorm_key: str = "libero_object_no_noops",
                  device: str = "cuda",
                  num_images_in_input: int = 2,

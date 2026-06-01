@@ -54,7 +54,7 @@ BENCHMARK_MAP = {
 
 def parse_args():
     p = argparse.ArgumentParser(description="Lerobot-native precompute for CRM training")
-    p.add_argument("--policy_path", type=str, default="/root/autodl-tmp/models/smolvla_libero/")
+    p.add_argument("--policy_path", type=str, default="./models/smolvla")
     p.add_argument("--suite", "--benchmark", type=str, default="object",
                    choices=["object", "spatial", "goal", "long", "90"])
     p.add_argument("--K", type=int, default=10)

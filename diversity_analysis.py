@@ -13,7 +13,7 @@ import time
 import numpy as np
 import torch
 
-sys.path.insert(0, "/root/acr-vla-conformal-refinement/src")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 from evaluate import load_libero_env
 from robosuite.utils.transform_utils import quat2axisangle
 
@@ -116,7 +116,7 @@ def main():
     else:
         from smolvla_wrapper import SmolVLAWrapper
         wrapper = SmolVLAWrapper(
-            "/root/autodl-tmp/models/smolvla_libero/", device=str(device)
+            "./models/smolvla", device=str(device)
         )
     
     print("[diversity] Setting up LIBERO environments...", flush=True)

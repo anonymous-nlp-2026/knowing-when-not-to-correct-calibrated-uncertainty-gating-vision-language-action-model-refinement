@@ -80,15 +80,15 @@ def parse_args():
     p.add_argument("--baseline_mode", type=str, default="single",
                    choices=["single", "mean"],
                    help="vla_only baseline: single (K=1) or mean (K=10 avg)")
-    p.add_argument("--smolvla_path", type=str, default="/root/autodl-tmp/models/smolvla_libero/")
+    p.add_argument("--smolvla_path", type=str, default="./models/smolvla")
     p.add_argument("--model", type=str, default="smolvla",
                    choices=["smolvla", "pi05", "openvla_oft"],
                    help="VLA model backbone")
     p.add_argument("--pi05_path", type=str,
-                   default="/root/autodl-tmp/models/pi05_libero_finetuned/",
+                   default="./models/pi05",
                    help="Path to Pi0.5 model")
     p.add_argument("--openvla_oft_path", type=str,
-                   default="/root/autodl-tmp/models/openvla-oft/object/",
+                   default="./models/openvla-oft",
                    help="Path to OpenVLA-OFT model")
     p.add_argument("--obs_dim", type=int, default=OBS_DIM)
     p.add_argument("--unified_obs_dim", type=int, default=None,
@@ -538,7 +538,7 @@ def evaluate(args):
 
     # Default checkpoint for adaptive_k mode
     if args.mode in ("adaptive_k", "adaptive_unc_head", "adaptive_conformal_crm") and args.checkpoint is None:
-        args.checkpoint = "/root/autodl-tmp/checkpoints/crm_smolvla_3suite_v1/crm_best.pt"
+        args.checkpoint = "./checkpoints/crm_best.pt"
         print(f"[eval] {args.mode}: using default CRM checkpoint {args.checkpoint}")
 
     print(f"[eval] Mode: {args.mode}, benchmark: {args.benchmark}")

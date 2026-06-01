@@ -28,8 +28,8 @@ def _to_scalar_uf_single(uf):
 
 
 def main():
-    cache_dir = Path("/root/autodl-tmp/crm_cache/")
-    output_path = Path("/root/autodl-tmp/checkpoints/crm_v3/norm_stats.pt")
+    cache_dir = Path("./cache/")
+    output_path = Path("./outputs/norm_stats.pt")
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     cgs = ConformilizedGaussianScoring(K=10, horizon=H_EFF, action_dim=CORRECTION_DIM)

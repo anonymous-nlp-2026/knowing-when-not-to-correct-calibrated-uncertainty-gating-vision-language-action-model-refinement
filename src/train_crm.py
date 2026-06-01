@@ -53,9 +53,9 @@ def parse_args():
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--output_dir", type=str,
-                   default="/root/autodl-tmp/checkpoints/crm/")
+                   default="./checkpoints/")
     p.add_argument("--cache_dir", type=str,
-                   default="/root/autodl-tmp/crm_cache/")
+                   default="./cache/")
     p.add_argument("--K", type=int, default=10)
     p.add_argument("--obs_dim", type=int, default=OBS_DIM)
     p.add_argument("--hidden_dim", type=int, default=256)
@@ -67,12 +67,12 @@ def parse_args():
                    help="only precompute features, don't train")
     p.add_argument("--auto", action="store_true",
                    help="precompute if cache missing, then train")
-    p.add_argument("--smolvla_path", type=str, default="/root/autodl-tmp/models/smolvla_libero/")
+    p.add_argument("--smolvla_path", type=str, default="./models/smolvla")
     p.add_argument("--model", type=str, default="smolvla",
                    choices=["smolvla", "pi05"],
                    help="which VLA to use for precompute")
     p.add_argument("--pi05_path", type=str,
-                   default="/root/autodl-tmp/models/pi05_libero_finetuned/")
+                   default="./models/pi05")
     p.add_argument("--max_demos_per_task", type=int, default=50)
     p.add_argument("--val_split", type=float, default=0.1)
     p.add_argument("--log_every", type=int, default=50)

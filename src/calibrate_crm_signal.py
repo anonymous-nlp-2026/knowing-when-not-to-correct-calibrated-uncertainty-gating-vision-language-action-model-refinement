@@ -15,7 +15,7 @@ import numpy as np
 import torch
 from pathlib import Path
 
-LOGFILE = "/root/acr-vla-conformal-refinement/logs/calibrate_crm_signal.log"
+LOGFILE = "./logs/calibrate_crm_signal.log"
 Path(LOGFILE).parent.mkdir(parents=True, exist_ok=True)
 _logfh = open(LOGFILE, "w")
 
@@ -36,9 +36,9 @@ def main():
     n_rollouts = 10
     max_steps = 300
     K = 10
-    crm_checkpoint = "/root/autodl-tmp/checkpoints/crm_v3_norm/obs_only/crm_best.pt"
+    crm_checkpoint = "./checkpoints/crm_best.pt"
     max_correction_norm = 0.2
-    smolvla_path = "/root/autodl-tmp/models/smolvla_libero/"
+    smolvla_path = "./models/smolvla"
     output_file = "logs/crm_magnitude_calibration.json"
 
     set_seed(seed)

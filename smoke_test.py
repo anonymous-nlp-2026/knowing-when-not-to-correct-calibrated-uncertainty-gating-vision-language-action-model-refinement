@@ -1,9 +1,10 @@
+import os
 import sys
 import time
 import torch
 import numpy as np
 
-sys.path.insert(0, '/root/acr-vla-conformal-refinement/src')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 print(f"[smoke] Starting smoke test...", flush=True)
 t0 = time.time()
@@ -13,7 +14,7 @@ from pi05_wrapper import Pi05Wrapper
 
 print(f"[smoke] Creating wrapper (loading model)...", flush=True)
 wrapper = Pi05Wrapper(
-    pretrained_path='/root/autodl-tmp/models/pi05_libero_finetuned/',
+    pretrained_path='./models/pi05',
     device='cuda:0'
 )
 t1 = time.time()

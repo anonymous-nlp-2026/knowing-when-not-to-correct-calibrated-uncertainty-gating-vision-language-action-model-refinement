@@ -52,7 +52,7 @@ class Pi05Wrapper:
 
     VLM_HIDDEN_SIZE = 2048
 
-    def __init__(self, pretrained_path: str = "/root/autodl-tmp/models/pi05_libero_finetuned/",
+    def __init__(self, pretrained_path: str = "./models/pi05",
                  device: str = "cuda", n_action_steps: int = 10, dtype: str = "auto"):
         self.device = torch.device(device)
         self.n_action_steps = n_action_steps
@@ -81,7 +81,7 @@ class Pi05Wrapper:
         from transformers import AutoTokenizer
         _tok_candidates = [
             "google/paligemma-3b-pt-224",
-            "/root/autodl-tmp/models/gemma-2b-tokenizer",
+            "./models/gemma-2b-tokenizer",
             "unsloth/gemma-2b",
         ]
         self.tokenizer = None

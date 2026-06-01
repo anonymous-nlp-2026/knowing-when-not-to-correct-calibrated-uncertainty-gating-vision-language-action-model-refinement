@@ -62,7 +62,7 @@ K_MAX = 64
 def parse_args():
     p = argparse.ArgumentParser(description="Rank-deficient covariance analysis")
     p.add_argument("--policy_path", type=str,
-                   default="/root/autodl-tmp/models/smolvla_libero/")
+                   default="./models/smolvla")
     p.add_argument("--suite", type=str, default="object",
                    choices=["object", "spatial", "goal", "long", "90"])
     p.add_argument("--n_tasks", type=int, default=5,
@@ -71,7 +71,7 @@ def parse_args():
                    help="Init states per task (each is one decision point).")
     p.add_argument("--K_max", type=int, default=K_MAX)
     p.add_argument("--output_dir", type=str,
-                   default="/root/acr-vla-conformal-refinement/logs/analysis_rank_deficient")
+                   default="./logs/analysis_rank_deficient")
     p.add_argument("--seed", type=int, default=42)
     p.add_argument("--device", type=str, default="cuda")
     p.add_argument("--skip_collect", action="store_true",

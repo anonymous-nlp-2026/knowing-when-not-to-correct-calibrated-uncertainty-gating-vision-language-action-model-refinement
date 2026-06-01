@@ -1,6 +1,7 @@
 """Numerical verification: sequential vs batched K-sample generation."""
+import os
 import sys
-sys.path.insert(0, "/root/acr-vla-conformal-refinement/src")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 import torch
 from smolvla_wrapper import SmolVLAWrapper

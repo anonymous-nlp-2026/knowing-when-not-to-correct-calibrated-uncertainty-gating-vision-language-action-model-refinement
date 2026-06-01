@@ -47,7 +47,7 @@ def split_action(action_7d):
 class SmolVLAWrapper:
     """Frozen SmolVLA for obs_features and K-sample generation."""
 
-    def __init__(self, pretrained_path: str = "/root/autodl-tmp/models/smolvla_libero/",
+    def __init__(self, pretrained_path: str = "./models/smolvla",
                  device: str = "cuda"):
         self.device = torch.device(device)
         self.policy = SmolVLAPolicy.from_pretrained(pretrained_path)

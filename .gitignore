@@ -46,3 +46,7 @@ Thumbs.db
 
 # Paper (do not touch)
 paper/
+
+# Environment variables
+.env
+.env.*

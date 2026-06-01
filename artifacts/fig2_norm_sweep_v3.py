@@ -1,3 +1,4 @@
+import os
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -63,7 +64,7 @@ ax.legend(loc='lower right', framealpha=0.9)
 
 plt.tight_layout()
 
-out_dir = '/root/acr-vla-conformal-refinement/artifacts'
+out_dir = os.path.dirname(os.path.abspath(__file__))
 fig.savefig(f'{out_dir}/fig2_norm_sweep_v3.pdf')
 fig.savefig(f'{out_dir}/fig2_norm_sweep_v3.png')
 plt.close()

@@ -4,12 +4,12 @@ os.environ['TRANSFORMERS_OFFLINE'] = '1'
 import torch
 import numpy as np
 import sys
-sys.path.insert(0, '/root/acr-vla-conformal-refinement/src')
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "src"))
 
 print('=== Loading Pi05Wrapper ===', flush=True)
 from pi05_wrapper import Pi05Wrapper
 
-w = Pi05Wrapper('/root/autodl-tmp/models/pi05_libero_finetuned/', device='cuda')
+w = Pi05Wrapper('./models/pi05', device='cuda')
 print(f'Model loaded, dtype of first param: {next(w.policy.parameters()).dtype}', flush=True)
 print(f'State mean shape: {w.state_mean.shape}, Action mean shape: {w.action_mean.shape}', flush=True)
 print(f'State mean: {w.state_mean}', flush=True)

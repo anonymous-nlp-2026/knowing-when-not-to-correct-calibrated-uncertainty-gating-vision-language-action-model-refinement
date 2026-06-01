@@ -40,7 +40,7 @@ def set_seed(seed: int):
 
 
 def load_libero_demos(benchmark_name: str,
-                      data_dir: str = "/root/autodl-tmp/libero_data/",
+                      data_dir: str = "./data/",
                       max_demos_per_task: int = 50):
     """
     Load LIBERO demo trajectories from HDF5 files.
