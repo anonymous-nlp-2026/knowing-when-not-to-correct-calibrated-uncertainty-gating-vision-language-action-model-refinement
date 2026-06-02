@@ -1,4 +1,4 @@
-# ACR-VLA: Adaptive Conformal Refinement for Frozen Flow-Matching VLAs
+# Knowing When Not to Correct: Calibrated Uncertainty Gating for Vision-Language-Action Model Refinement
 
 Adaptive test-time refinement framework that learns *when not to correct* frozen Vision-Language-Action models, using calibrated uncertainty gating to avoid harmful corrections on confident steps.
 
